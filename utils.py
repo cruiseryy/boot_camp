@@ -115,7 +115,82 @@ class gbeta:
         ax.set_ylabel('PDF/freq')
         pause = 1
         return
+    
+class gev:
+    def __init__(self, data) -> None:
+        self.d = np.array(sorted(data))
+        tmp = lm_est(data)
+        l1, l2, l3 = tmp.estimate()
+        self.lm = l1
+        self.ls = l2
+        self.lg = l3/l2
+        self.x = np.linspace(0, 1.1*np.max(data), 100)
+        self.dx = np.abs(self.x[1] - self.x[0])
+        return
+    
+    def err_mle(self, para):
+        ksi, mu, sigma = para
+        if sigma <= 0: return float('inf')
+        y = 1 + ksi * (self.d - mu) / sigma
+        if np.min(y) <= 0: return float('inf') 
+        t = y ** (-1/ksi)
+        err = -len(self.d)*np.log(sigma) + (1 + ksi) * np.sum(np.log(t)) + np.sum(-t) 
+        return -err
+    
+    def sample_statistics(self, ksi, mu, sigma):
+        y = 1 + ksi * (self.x - mu) / sigma
+        t = y ** (-1/ksi)
+        g = 1/sigma * t**(1+ksi) * np.exp(-t)
+        G = np.exp(-t)
+        # print(G[-1])
+        est_l1 = np.sum(self.x * g * self.dx)
+        est_l2 = np.sum((2*G - 1) * self.x * g * self.dx)
+        est_l3 = np.sum((6*G**2 - 6*G + 1) * self.x * g * self.dx)
 
+        est_mu = est_l1
+        est_sigma = est_l2
+        est_gamma = est_l3/est_l2
+
+        return (est_mu, est_sigma, est_gamma)
+    
+    def err_lm(self, para):
+        ksi, mu, sigma = para
+        if sigma <= 0: return float('inf')
+        y = 1 + ksi * (self.x - mu) / sigma
+        if np.min(y) <= 0: return float('inf') 
+        em, es, eg = self.sample_statistics(ksi, mu, sigma)
+        err = (em - self.lm)**2 / self.lm**2 + (es**2 - self.ls**2)**2 / self.ls**4 + (eg - self.lg)**2 / self.lg**2
+        return err
+    
+    def optimize(self, flag=0): 
+        if flag == 0:
+            self.ksi, self.mu, self.sigma = optimize.fmin(self.err_mle, np.array([1, 1, 1]))
+            pause = 1
+        else:
+            self.ksi, self.mu, self.sigma = optimize.fmin(self.err_lm, np.array([1, 1, 1]))
+            pause = 1
+        return
+    
+    def comp(self, ax, title, flag=0):
+        y = 1 + self.ksi * (self.x - self.mu) / self.sigma
+        t = y ** (-1/self.ksi)
+        g = 1/self.sigma * t**(1+self.ksi) * np.exp(-t)
+
+        # fig, ax = plt.subplots()
+        ax.hist(self.d)
+        if flag == 0:
+            ax.plot(self.x, 200*g)
+        else:
+            ax.plot(self.x, 200*g)
+        ax.set_title(title)
+        ax.set_xlabel('annual 5-day low flow [?]')
+        ax.set_ylabel('freq/rescaled PDF')
+        pause = 1
+        return
+
+
+
+    
 if __name__ == '__main__':
     data = [2.0, 3.0, 4.0, 2.4, 5.5, 1.2, 5.4, 2.2, 7.1, 1.3, 1.5]
     tmp = lm_est(data)
