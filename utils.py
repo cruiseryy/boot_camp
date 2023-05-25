@@ -165,17 +165,16 @@ class gev:
     def optimize(self, flag=0): 
         if flag == 0:
             self.ksi, self.mu, self.sigma = optimize.fmin(self.err_mle, np.array([1, 1, 1]))
-            pause = 1
+            # pause = 1
         else:
             self.ksi, self.mu, self.sigma = optimize.fmin(self.err_lm, np.array([1, 1, 1]))
-            pause = 1
+            # pause = 1
         return
     
     def comp(self, ax, title, flag=0):
         y = 1 + self.ksi * (self.x - self.mu) / self.sigma
         t = y ** (-1/self.ksi)
         g = 1/self.sigma * t**(1+self.ksi) * np.exp(-t)
-
         # fig, ax = plt.subplots()
         ax.hist(self.d)
         if flag == 0:
@@ -185,12 +184,9 @@ class gev:
         ax.set_title(title)
         ax.set_xlabel('annual 5-day low flow [?]')
         ax.set_ylabel('freq/rescaled PDF')
-        pause = 1
+        # pause = 1
         return
 
-
-
-    
 if __name__ == '__main__':
     data = [2.0, 3.0, 4.0, 2.4, 5.5, 1.2, 5.4, 2.2, 7.1, 1.3, 1.5]
     tmp = lm_est(data)
