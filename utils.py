@@ -78,6 +78,7 @@ class gbeta:
     def errfunc(self, x):
         r, t = x
         if t <= r: return 99999999
+        # if r < 1 or (t-r) < 1: return 99999999
         em, es, eg = self.sample_statistics(r, t)
         tmperr = (em - self.mu)**2 / self.mu**2 + (es**2 - self.sigma**2)**2 / self.sigma**4 + (eg - self.gamma)**2 / self.gamma**2
         return tmperr
@@ -95,6 +96,7 @@ class gbeta:
         for r in rr:
             for t in tt:
                 if t <= r: continue
+                # if r < 1 or (t-r) < 1: continue
                 em, es, eg = self.sample_statistics(r, t)
                 tmperr = (em - self.mu)**2 / self.mu**2 + (es**2 - self.sigma**2)**2 / self.sigma**4 + (eg - self.gamma)**2 / self.gamma**2
                 if tmperr < err:
