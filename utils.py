@@ -88,8 +88,8 @@ class gbeta:
         return (self.r, self.t)
     
     def grid_search(self):
-        rr = np.linspace(0.5, 50, 199)
-        tt = np.linspace(0.5, 50, 199)
+        rr = np.linspace(0.5, 50, 496)
+        tt = np.linspace(0.5, 50, 496)
         err = float('inf')
         res_r = res_t = 9999
         for r in rr:
@@ -174,11 +174,11 @@ class gev:
         if flag == 0:
             self.ksi, self.sigma = optimize.fmin(self.err_mle, np.array([7.7, 10]))
             self.mu = self.sigma/self.ksi
-            pause = 1
+            # pause = 1
         else:
             self.ksi, self.sigma = optimize.fmin(self.err_lm, np.array([7.7, 10]))
             self.mu = self.sigma/self.ksi
-            pause = 1
+            # pause = 1
         return
     
     def comp(self, ax, title, flag=0):
@@ -191,7 +191,6 @@ class gev:
             ax.plot(self.x, 200*g)
         else:
             ax.plot(self.x, 200*g)
-            pause = 1
         ax.set_title(title)
         ax.set_xlabel('annual 5-day low flow [?]')
         ax.set_ylabel('freq/rescaled PDF')
