@@ -29,6 +29,6 @@ tmp.comp(ax[0], tit[0],flag=0)
 tmp.optimize(flag=1)
 tmp.comp(ax[1], tit[1],flag=1)
 
-# plt.savefig('q2_new_two_para.pdf')
+plt.savefig('q2_two_para.pdf')
 
 pause = 1
