@@ -44,8 +44,9 @@ class gbeta:
         xl = [(i+1.0)/(n+1.0) for i in range(mm)]
         xr = [(n-mm+1.0+i)/(n+1.0) for i in range(mm)]
         self.a, self.b = self.lin_fit(np.array(xl), np.array(yl), target=0), self.lin_fit(np.array(xr), np.array(yr), target=1)
-        self.theta = np.linspace(self.a+0.001, self.b-0.001, 100)
-        self.d_theta = self.theta[1] - self.theta[0]
+        node = np.linspace(self.a, self.b, 1001)
+        self.d_theta = node[1] - node[0]
+        self.theta = node[1:] - self.d_theta/2
         pause = 1
         return (self.a, self.b)
 
@@ -87,8 +88,8 @@ class gbeta:
         return (self.r, self.t)
     
     def grid_search(self):
-        rr = np.linspace(0.1, 50, 500)
-        tt = np.linspace(0.1, 50, 500)
+        rr = np.linspace(0.5, 50, 199)
+        tt = np.linspace(0.5, 50, 199)
         err = float('inf')
         res_r = res_t = 9999
         for r in rr:
@@ -124,8 +125,9 @@ class gev:
         self.lm = l1
         self.ls = l2
         self.lg = l3/l2
-        self.x = np.linspace(0, 1.1*np.max(data), 100)
-        self.dx = np.abs(self.x[1] - self.x[0])
+        node = np.linspace(0, 2*np.max(data), 20001)
+        self.dx = node[1] - node[0]
+        self.x = node[1:] - self.dx/2
         return
     
     def err_mle(self, para):
@@ -158,17 +160,21 @@ class gev:
         if sigma <= 0: return float('inf')
         y = 1 + ksi * (self.x - mu) / sigma
         if np.min(y) <= 0: return float('inf') 
+        em2 = mu + sigma * (1 - gamma(1 - ksi)) / -ksi
+        es2 = sigma * (1 - 2**ksi) * gamma(1 - ksi) / -ksi
+        eg2 = 2*(1 - 3**ksi) / (1 - 2**ksi) - 3
         em, es, eg = self.sample_statistics(ksi, mu, sigma)
+        print('({:.2f}, {:.2f}, {:.2f}'.format((em2-em)/em2, (es2-es)/es2, (eg2-eg)/eg2))
         err = (em - self.lm)**2 / self.lm**2 + (es**2 - self.ls**2)**2 / self.ls**4 + (eg - self.lg)**2 / self.lg**2
         return err
     
     def optimize(self, flag=0): 
         if flag == 0:
-            self.ksi, self.mu, self.sigma = optimize.fmin(self.err_mle, np.array([1, 1, 1]))
-            # pause = 1
+            self.ksi, self.mu, self.sigma = optimize.fmin(self.err_mle, np.array([0.5, 10, 10]))
+            pause = 1
         else:
-            self.ksi, self.mu, self.sigma = optimize.fmin(self.err_lm, np.array([1, 1, 1]))
-            # pause = 1
+            self.ksi, self.mu, self.sigma = optimize.fmin(self.err_lm, np.array([0.5, 10, 10]))
+            pause = 1
         return
     
     def comp(self, ax, title, flag=0):
@@ -181,6 +187,7 @@ class gev:
             ax.plot(self.x, 200*g)
         else:
             ax.plot(self.x, 200*g)
+            pause = 1
         ax.set_title(title)
         ax.set_xlabel('annual 5-day low flow [?]')
         ax.set_ylabel('freq/rescaled PDF')

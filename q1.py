@@ -21,5 +21,5 @@ for j in range(12):
     tmp_beta.comp(ax[tr][tc], tit[j] + ' err={:.2f}'.format(tmp_beta.err))
     
 plt.tight_layout()
-plt.savefig('q1_2.pdf')
+plt.savefig('q1.pdf')
 pause = 1
