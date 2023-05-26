@@ -162,11 +162,11 @@ class gev:
         if sigma <= 0: return float('inf')
         y = 1 + ksi * (self.x - mu) / sigma
         if np.min(y) <= 0: return float('inf') 
-        em2 = mu + sigma * (1 - gamma(1 - ksi)) / -ksi
-        es2 = sigma * (1 - 2**ksi) * gamma(1 - ksi) / -ksi
-        eg2 = 2*(1 - 3**ksi) / (1 - 2**ksi) - 3
+        # em2 = mu + sigma * (1 - gamma(1 - ksi)) / -ksi
+        # es2 = sigma * (1 - 2**ksi) * gamma(1 - ksi) / -ksi
+        # eg2 = 2*(1 - 3**ksi) / (1 - 2**ksi) - 3
         em, es, eg = self.sample_statistics(ksi, mu, sigma)
-        print('({:.2f}, {:.2f}, {:.2f}'.format((em2-em)/em, (es2-es)/es, (eg2-eg)/eg))
+        # print('({:.2f}, {:.2f}, {:.2f}'.format((em2-em)/em, (es2-es)/es, (eg2-eg)/eg))
         err = (em - self.lm)**2 / self.lm**2 + (es**2 - self.ls**2)**2 / self.ls**4 + (eg - self.lg)**2 / self.lg**2
         return err
     
