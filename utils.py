@@ -131,7 +131,8 @@ class gev:
         return
     
     def err_mle(self, para):
-        ksi, mu, sigma = para
+        ksi, sigma = para
+        mu = sigma/ksi 
         if sigma <= 0: return float('inf')
         y = 1 + ksi * (self.d - mu) / sigma
         if np.min(y) <= 0: return float('inf') 
@@ -156,7 +157,8 @@ class gev:
         return (est_mu, est_sigma, est_gamma)
     
     def err_lm(self, para):
-        ksi, mu, sigma = para
+        ksi, sigma = para
+        mu = sigma/ksi
         if sigma <= 0: return float('inf')
         y = 1 + ksi * (self.x - mu) / sigma
         if np.min(y) <= 0: return float('inf') 
@@ -164,16 +166,18 @@ class gev:
         es2 = sigma * (1 - 2**ksi) * gamma(1 - ksi) / -ksi
         eg2 = 2*(1 - 3**ksi) / (1 - 2**ksi) - 3
         em, es, eg = self.sample_statistics(ksi, mu, sigma)
-        print('({:.2f}, {:.2f}, {:.2f}'.format((em2-em)/em2, (es2-es)/es2, (eg2-eg)/eg2))
+        print('({:.2f}, {:.2f}, {:.2f}'.format((em2-em)/em, (es2-es)/es, (eg2-eg)/eg))
         err = (em - self.lm)**2 / self.lm**2 + (es**2 - self.ls**2)**2 / self.ls**4 + (eg - self.lg)**2 / self.lg**2
         return err
     
     def optimize(self, flag=0): 
         if flag == 0:
-            self.ksi, self.mu, self.sigma = optimize.fmin(self.err_mle, np.array([0.5, 10, 10]))
+            self.ksi, self.sigma = optimize.fmin(self.err_mle, np.array([7.7, 10]))
+            self.mu = self.sigma/self.ksi
             pause = 1
         else:
-            self.ksi, self.mu, self.sigma = optimize.fmin(self.err_lm, np.array([0.5, 10, 10]))
+            self.ksi, self.sigma = optimize.fmin(self.err_lm, np.array([7.7, 10]))
+            self.mu = self.sigma/self.ksi
             pause = 1
         return
     
