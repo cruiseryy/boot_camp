@@ -92,7 +92,6 @@ class solution:
         return 
     
     
-    
     def clayton_cdf(self, ax, tit = '(b) clayton '):
         theta = 2 * self.tau / (1 - self.tau)
         n = 100
@@ -118,12 +117,12 @@ class solution:
     
     def clayton_sim(self):
         theta = 2 * self.tau / (1 - self.tau)
-        n = len(self.x)
+        n = 1000
 
         u = np.random.rand(n)
         t = np.random.rand(n)
 
-        v = (t * u ** (theta+1)) ** (-theta/(theta+1)) + 1- u ** (-theta)
+        v = (t * u ** (theta+1)) ** (-theta/(theta+1)) + 1 - u ** (-theta)
         xx = gamma.ppf(u , sln.alpha_x)/sln.beta_x
         yy = gamma.ppf(v , sln.alpha_y)/sln.beta_y
 
@@ -154,9 +153,7 @@ class solution:
         return 
     
     def debye_int(self, theta):
-        
         tmpfunc = lambda x: x / (np.exp(x) - 1)
-
         return 1 / theta * integrate.quad(tmpfunc, 0, theta)[0]
 
     def frank_cdf(self, ax, tit = '(d) frank'):
@@ -168,8 +165,24 @@ class solution:
             if diff > abs(tau_est - self.tau):
                 theta = i
                 diff = abs(tau_est - self.tau)
-        pause = 1
+        n = 100
+        u = np.linspace(0, 1-1/n, n)
+        v = np.linspace(0, 1-1/n, n)
+        xv = gamma.ppf(u , sln.alpha_x)/sln.beta_x
+        yv = gamma.ppf(v , sln.alpha_y)/sln.beta_y
+        xg, yg = np.meshgrid(xv, yv)
+        zz = np.zeros([n, n])
+        for ir in range(n):
+            for ic in range(n):
+                zz[ir, ic] = -1 / theta * np.log( 1 + (np.exp(-theta*u[ir]) - 1) * (np.exp(-theta*v[ic]) - 1) / (np.exp(-theta) - 1))
+        ax.contourf(xg, yg, zz, levels = 20, vmin=0, vmax=1)
+        ax.set_xlabel(self.var_name[0] + ' [%]')
+        ax.set_ylabel(self.var_name[1] + ' [%]')
+        ax.set_title(tit)
         return
+    
+    def frank_sim(self):
+        return 
 
 
 
@@ -177,20 +190,19 @@ class solution:
 if __name__ == '__main__':
     sln = solution()
     sln.margin_fit()
-    # tmpax = [float('inf')]*4
-    # fig, ax = plt.subplots(nrows=2, ncols=2)
-    # im, axlim= sln.clayton_cdf(ax[0][1])
-    # tmpax = [min(i, j) for i, j in zip(tmpax, axlim)]
-    # axlim = sln.gumbel_cdf(ax[1][0])
-    # tmpax = [min(i, j) for i, j in zip(tmpax, axlim)]
-    # sln.cdf_2d(ax[0][0], axlim=tmpax)
-    # fig.tight_layout()
-    # fig.colorbar(im, ax=ax.ravel().tolist())
-
-    sln.frank_cdf(ax=0)
-
+    tmpax = [float('inf')]*4
+    fig, ax = plt.subplots(nrows=2, ncols=2)
+    im, axlim= sln.clayton_cdf(ax[0][1])
+    tmpax = [min(i, j) for i, j in zip(tmpax, axlim)]
+    axlim = sln.gumbel_cdf(ax[1][0])
+    sln.frank_cdf(ax[1][1])
+    sln.cdf_2d(ax[0][0], axlim=tmpax)
+    fig.tight_layout()
+    fig.colorbar(im, ax=ax.ravel().tolist())
+    
     # sln.margin_cdf_compare()
-    # sln.clayton_copula()
+    # sln.clayton_copula(
 
+    sln.clayton_sim()
     pause = 1
 
