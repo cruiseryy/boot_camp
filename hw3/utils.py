@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import kendalltau, gamma
 import bisect
 from scipy import integrate
+from scipy.optimize import fsolve, brentq
 
 class solution:
     def __init__(self, file = 'data.txt', x = 'LSMEM', y = 'VIC') -> None:
@@ -149,7 +150,33 @@ class solution:
         axlim = [np.min(xv), -np.max(xv), np.min(yv), -np.max(yv)]
         return axlim
     
+    def grid_search(self, func, args):
+        diff = float('inf')
+        vv = np.linspace(0.001, 0.999, 999)
+        v_est = -1
+        for i in vv:
+            tmpdiff = abs(func(i, *args))
+            if tmpdiff < diff:
+                v_est = i
+                diff = tmpdiff
+        return v_est
+    
     def gumbel_sim(self):
+
+        def gtmp_func(v, *para):
+            u, theta, t = para
+            return np.exp(-((-np.log(u))**theta + (-np.log(v))**theta)**(1/theta)) * ((-np.log(u))**theta + (-np.log(v))**theta)**(1/theta - 1) * (-np.log(u))**(theta-1) / u - t
+        
+        theta = 1 / (1 - self.tau)
+        n = 1000
+        u = np.random.rand(n)
+        t = np.random.rand(n)
+        v = np.zeros([n,])
+        for i in range(n):
+            v[i] = self.grid_search(gtmp_func, (u[i], theta, t[i]))
+        xx = gamma.ppf(u , sln.alpha_x)/sln.beta_x
+        yy = gamma.ppf(v , sln.alpha_y)/sln.beta_y
+        pause = 1
         return 
     
     def debye_int(self, theta):
@@ -182,6 +209,24 @@ class solution:
         return
     
     def frank_sim(self):
+        theta = 999 
+        diff = float('inf')
+        tt = np.linspace(-20, 20, 4000)
+        for i in tt:
+            tau_est = 1 - 4 / i * (1 - self.debye_int(i))
+            if diff > abs(tau_est - self.tau):
+                theta = i
+                diff = abs(tau_est - self.tau)
+        n = 1000
+        u = np.random.rand(n)
+        t = np.random.rand(n)
+        Theta = np.exp(-theta)
+        U = np.exp(-theta*u)
+        V = (t * (Theta - U) + U) / (U - U*t + t)
+        v = np.log(V)/-theta
+        xx = gamma.ppf(u , sln.alpha_x)/sln.beta_x
+        yy = gamma.ppf(v , sln.alpha_y)/sln.beta_y
+        pause = 1
         return 
 
 
@@ -190,19 +235,21 @@ class solution:
 if __name__ == '__main__':
     sln = solution()
     sln.margin_fit()
-    tmpax = [float('inf')]*4
-    fig, ax = plt.subplots(nrows=2, ncols=2)
-    im, axlim= sln.clayton_cdf(ax[0][1])
-    tmpax = [min(i, j) for i, j in zip(tmpax, axlim)]
-    axlim = sln.gumbel_cdf(ax[1][0])
-    sln.frank_cdf(ax[1][1])
-    sln.cdf_2d(ax[0][0], axlim=tmpax)
-    fig.tight_layout()
-    fig.colorbar(im, ax=ax.ravel().tolist())
+    # tmpax = [float('inf')]*4
+    # fig, ax = plt.subplots(nrows=2, ncols=2)
+    # im, axlim= sln.clayton_cdf(ax[0][1])
+    # tmpax = [min(i, j) for i, j in zip(tmpax, axlim)]
+    # axlim = sln.gumbel_cdf(ax[1][0])
+    # sln.frank_cdf(ax[1][1])
+    # sln.cdf_2d(ax[0][0], axlim=tmpax)
+    # fig.tight_layout()
+    # fig.colorbar(im, ax=ax.ravel().tolist())
     
     # sln.margin_cdf_compare()
     # sln.clayton_copula(
 
-    sln.clayton_sim()
+    # sln.clayton_sim()
+    # sln.gumbel_sim()
+    # sln.frank_sim()
     pause = 1
 
