@@ -12,7 +12,7 @@ class solution:
         
         data = pd.read_csv(file, delimiter='\t', header = 0)
         self.x = data[x].to_numpy()
-        self.y = data[y].to_numpy() - self.x
+        self.y = 30 - (data[y].to_numpy() - self.x)
         self.var_name = [x, y + '-' + x]
         self.tau, _ = kendalltau(self.x, self.y)
 
@@ -86,7 +86,7 @@ class solution:
         xg, yg = np.meshgrid(xx, yy)
         ax.contourf(xg, yg, zz, levels = 20, vmin=0, vmax=1)
         ax.set_xlabel(self.var_name[0] + ' [%]')
-        ax.set_ylabel(self.var_name[1] + ' [%]')
+        ax.set_ylabel('30 - ' + self.var_name[1] + ' [%]')
         ax.set_title(tit)
         pause = 1
 
@@ -104,28 +104,34 @@ class solution:
         zz = np.zeros([n, n])
         for ir in range(n):
             for ic in range(n):
-                zz[ir, ic] = max((u[ir] ** (-theta) + v[ic] ** (-theta) - 1), 0) ** (-1/theta)
+                zz[ir, ic] = (u[ir] ** (-theta) + v[ic] ** (-theta) - 1) ** (-1/theta)
                 # pause = 1
 
         im = ax.contourf(xg, yg, zz, levels = 20, vmin=0, vmax=1)
         ax.set_xlabel(self.var_name[0] + ' [%]')
-        ax.set_ylabel(self.var_name[1] + ' [%]')
+        ax.set_ylabel('30 - ' + self.var_name[1] + ' [%]')
         ax.set_title(tit)
 
         axlim = [np.min(xv), -np.max(xv), np.min(yv), -np.max(yv)]
         pause = 1
         return im, axlim
     
-    def clayton_sim(self):
+    def clayton_sim(self, ax):
         theta = 2 * self.tau / (1 - self.tau)
         n = 1000
 
         u = np.random.rand(n)
         t = np.random.rand(n)
 
-        v = (t * u ** (theta+1)) ** (-theta/(theta+1)) + 1 - u ** (-theta)
+        v = ( (t * u ** (theta+1)) ** (-theta/(theta+1)) + 1 - u ** (-theta) ) ** (-1/theta)
         xx = gamma.ppf(u , sln.alpha_x)/sln.beta_x
         yy = gamma.ppf(v , sln.alpha_y)/sln.beta_y
+
+        ax.scatter(self.x, 30-self.y, color='k', label='original')
+        ax.scatter(xx, 30-yy, color='r', label='simulated')
+        ax.set_xlabel(self.var_name[0] + ' [%]')
+        ax.set_ylabel(self.var_name[1] + ' [%]')
+        ax.set_title('(a) Clayton')
 
         pause = 1
         return 
@@ -144,7 +150,7 @@ class solution:
                 zz[ir, ic] = np.exp(-((-np.log(u[ir])) ** theta + (-np.log(v[ic])) ** theta) ** (1/theta))
         ax.contourf(xg, yg, zz, levels = 20, vmin=0, vmax=1)
         ax.set_xlabel(self.var_name[0] + ' [%]')
-        ax.set_ylabel(self.var_name[1] + ' [%]')
+        ax.set_ylabel('30 - ' + self.var_name[1] + ' [%]')
         ax.set_title(tit)
 
         axlim = [np.min(xv), -np.max(xv), np.min(yv), -np.max(yv)]
@@ -161,7 +167,7 @@ class solution:
                 diff = tmpdiff
         return v_est
     
-    def gumbel_sim(self):
+    def gumbel_sim(self, ax):
 
         def gtmp_func(v, *para):
             u, theta, t = para
@@ -176,6 +182,32 @@ class solution:
             v[i] = self.grid_search(gtmp_func, (u[i], theta, t[i]))
         xx = gamma.ppf(u , sln.alpha_x)/sln.beta_x
         yy = gamma.ppf(v , sln.alpha_y)/sln.beta_y
+        ax.scatter(self.x, 30-self.y, color='k', label='original')
+        ax.scatter(xx, 30-yy, color='r', label='simulated')
+        ax.set_xlabel(self.var_name[0] + ' [%]')
+        ax.set_ylabel(self.var_name[1] + ' [%]')
+        ax.set_title('(b) Gumbel')
+        pause = 1
+        return 
+     
+    def gumbel_cond(self, ax):
+
+        def gtmp_func(v, *para):
+            u, theta, t = para
+            return np.exp(-((-np.log(u))**theta + (-np.log(v))**theta)**(1/theta)) * ((-np.log(u))**theta + (-np.log(v))**theta)**(1/theta - 1) * (-np.log(u))**(theta-1) / u - t
+        
+        theta = 1 / (1 - self.tau)
+        n = 200
+        u = gamma.cdf(10*self.beta_x, self.alpha_x)
+        t = np.random.rand(n)
+        v = np.zeros([n,])
+        for i in range(n):
+            v[i] = self.grid_search(gtmp_func, (u, theta, t[i]))
+        yy = 30 - gamma.ppf(v , sln.alpha_y)/sln.beta_y
+        ax.hist(yy)
+        ax.set_xlabel(self.var_name[1] + ' [%]')
+        ax.set_ylabel('Frequency')
+        ax.set_title('mean = {:.2f} sigma = {:.2f}'.format(np.mean(yy), np.std(yy)))
         pause = 1
         return 
     
@@ -204,11 +236,11 @@ class solution:
                 zz[ir, ic] = -1 / theta * np.log( 1 + (np.exp(-theta*u[ir]) - 1) * (np.exp(-theta*v[ic]) - 1) / (np.exp(-theta) - 1))
         ax.contourf(xg, yg, zz, levels = 20, vmin=0, vmax=1)
         ax.set_xlabel(self.var_name[0] + ' [%]')
-        ax.set_ylabel(self.var_name[1] + ' [%]')
+        ax.set_ylabel('30 - ' + self.var_name[1] + ' [%]')
         ax.set_title(tit)
         return
     
-    def frank_sim(self):
+    def frank_sim(self, ax):
         theta = 999 
         diff = float('inf')
         tt = np.linspace(-20, 20, 4000)
@@ -226,6 +258,11 @@ class solution:
         v = np.log(V)/-theta
         xx = gamma.ppf(u , sln.alpha_x)/sln.beta_x
         yy = gamma.ppf(v , sln.alpha_y)/sln.beta_y
+        ax.scatter(self.x, 30-self.y, color='k', label='original')
+        ax.scatter(xx, 30-yy, color='r', label='simulated')
+        ax.set_xlabel(self.var_name[0] + ' [%]')
+        ax.set_ylabel(self.var_name[1] + ' [%]')
+        ax.set_title('(c) Frank')
         pause = 1
         return 
 
@@ -233,23 +270,30 @@ class solution:
 
 
 if __name__ == '__main__':
-    sln = solution()
+    sln = solution(y = 'Mesonet')
     sln.margin_fit()
-    # tmpax = [float('inf')]*4
-    # fig, ax = plt.subplots(nrows=2, ncols=2)
-    # im, axlim= sln.clayton_cdf(ax[0][1])
-    # tmpax = [min(i, j) for i, j in zip(tmpax, axlim)]
-    # axlim = sln.gumbel_cdf(ax[1][0])
-    # sln.frank_cdf(ax[1][1])
-    # sln.cdf_2d(ax[0][0], axlim=tmpax)
-    # fig.tight_layout()
-    # fig.colorbar(im, ax=ax.ravel().tolist())
+    tmpax = [float('inf')]*4
+    fig, ax = plt.subplots(nrows=2, ncols=2, figsize=[11, 8])
+    im, axlim= sln.clayton_cdf(ax[0][1])
+    tmpax = [min(i, j) for i, j in zip(tmpax, axlim)]
+    axlim = sln.gumbel_cdf(ax[1][0])
+    sln.frank_cdf(ax[1][1])
+    sln.cdf_2d(ax[0][0], axlim=tmpax)
+    fig.tight_layout()
+    cbar = fig.colorbar(im, ax=ax.ravel().tolist())
+    cbar.set_label('CDF')
+    plt.savefig('cdf2.pdf')
+    plt.close(fig)
     
     # sln.margin_cdf_compare()
-    # sln.clayton_copula(
-
-    # sln.clayton_sim()
-    # sln.gumbel_sim()
-    # sln.frank_sim()
+    fig, ax = plt.subplots(nrows=1, ncols=3, figsize=[15, 4])
+    sln.clayton_sim(ax[0])
+    sln.gumbel_sim(ax[1])
+    sln.frank_sim(ax[2])
+    plt.savefig('sim2.pdf')
+    plt.close(fig)
+    fig, ax = plt.subplots()
+    sln.gumbel_cond(ax)
+    plt.savefig('cond2.pdf')
     pause = 1
 
