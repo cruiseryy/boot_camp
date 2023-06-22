@@ -19,7 +19,7 @@ def mc_sample(PP, p0, n):
     return res 
 
 file = 'Princeton Precipitation 2002-2014.xlsx'
-df = pd.read_excel(file, sheet_name=None)['Sheet1']
+df = pd.read_excel(file, sheet_name = None)['Sheet1']
 ymd = df.iloc[:,1]
 rain = df.iloc[:,2]
 
@@ -62,6 +62,7 @@ pi = np.zeros([2, 4])
 N = 100
 cc_sample = np.zeros([N, 4])
 cc_analytical = np.zeros([4, ])
+
 for idx in range(4):
     tmp_P = PP[:, :, idx]
     tmp_pi = np.linalg.matrix_power(tmp_P, 50) @ (np.ones([2, 1]) * 1 / 2)
@@ -70,6 +71,7 @@ for idx in range(4):
     for k in range(N):
         t_sample = mc_sample(tmp_P, p0[:, idx], n = 10000)
         cc_sample[k, idx] = np.corrcoef(t_sample[1:], t_sample[:-1])[0, 1]
+    # with a little bit math-ing, it is ez to derive the below analytical solution
     cc_analytical[idx] = (1 - tmp_pi[0]) * tmp_P[0, 0] - tmp_pi[0] * tmp_P[1, 0] - (1 - tmp_pi[0]) * tmp_P[0, 1] + tmp_pi[0] * tmp_P[1, 1]
 
 
