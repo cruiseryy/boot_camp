@@ -62,7 +62,7 @@ for i in range(5):
 
 print('\n')
 # check if the time series is from a ARMA(1,1) process -> 4
-for i in range(5):
+for i in range(5):Th
     tdata = data.iloc[:, i]
     rho1 = np.corrcoef(tdata[1:], tdata[:-1])[0, 1]
     rho2 = np.corrcoef(tdata[2:], tdata[:-2])[0, 1]

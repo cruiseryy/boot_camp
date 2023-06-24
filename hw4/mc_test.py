@@ -22,11 +22,13 @@ file = 'Princeton Precipitation 2002-2014.xlsx'
 df = pd.read_excel(file, sheet_name = None)['Sheet1']
 ymd = df.iloc[:,1]
 rain = df.iloc[:,2]
+mid = 2191
+ymd = ymd[mid:].to_numpy()
+rain = rain[mid:].to_numpy()
 
 NN = np.zeros([2, 2, 4])
 thres = set([3, 6, 9, 12])
 idx = 0
-
 for i in range(len(ymd) - 1):
     nex_ = pd.DateOffset(1) + ymd[i]
 
@@ -82,6 +84,6 @@ ax.set_xlabel('Season')
 ax.set_ylabel('Corr Coef')
 ax.set_xticklabels(['DJF', 'MAM', 'JJA', 'SON'])
 ax.yaxis.grid(True)
-fig.savefig('MC_cc_comparison.pdf')
+fig.savefig('MC_cc_comparison_2.pdf')
 
 pause = 1

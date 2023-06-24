@@ -44,6 +44,7 @@ for i in range(1, 5):
     for j in range(i+1, 5):
         B[j, i] = D[i, j] - np.sum(B[i, :i] * B[j, :i])
 
+pause = 1
 # 2) using the eigenvalue decomposition 
 E, P = np.linalg.eig(D)
 E, E_sqrt = np.diag(E), np.diag(np.sqrt(E))
