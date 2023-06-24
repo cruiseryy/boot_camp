@@ -31,7 +31,7 @@ fig.savefig('scatter.pdf')
 
 D = M0 - M1 @ np.linalg.inv(M0) @ M1.T
 
-# assume B is a lower-triangular matrix
+# 1) assume B is a lower-triangular matrix
 B = np.zeros([5, 5])
 
 B[0, 0] = np.sqrt(D[0, 0])
@@ -44,6 +44,10 @@ for i in range(1, 5):
     for j in range(i+1, 5):
         B[j, i] = D[i, j] - np.sum(B[i, :i] * B[j, :i])
 
+# 2) using the eigenvalue decomposition 
+E, P = np.linalg.eig(D)
+E, E_sqrt = np.diag(E), np.diag(np.sqrt(E))
+B = P @ E_sqrt
 pause = 1
     
 
