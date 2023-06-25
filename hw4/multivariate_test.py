@@ -42,7 +42,7 @@ for i in range(1, 5):
 for i in range(1, 5):
     B[i, i] = np.sqrt(D[i, i] - np.sum(B[i, :i]**2))
     for j in range(i+1, 5):
-        B[j, i] = D[i, j] - np.sum(B[i, :i] * B[j, :i])
+        B[j, i] = (D[i, j] - np.sum(B[i, :i] * B[j, :i])) / B[i, i]
 
 pause = 1
 # 2) using the eigenvalue decomposition 
