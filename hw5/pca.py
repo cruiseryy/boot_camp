@@ -6,13 +6,17 @@ import time
 
 class pca_demo():
     
-    def __init__(self, file, var_, eps = 0) -> None:
+    def __init__(self, file, var_, eps = 0, lat_ = 'lat', lon_ = 'lon', time_slice = [-1, -1]) -> None:
         with xr.open_dataset(file) as ds:
-            sm = ds[var_]
-            lat = ds['lat']
-            lon = ds['lon']
-            # data3 = sm.values[33*12:,:,:]
+            
+            lat = ds[lat_]
+            lon = ds[lon_]
+            if time_slice[0] == -1:
+                sm = ds[var_]
+            else:
+                sm = ds[var_].sel(time=slice(time_slice[0], time_slice[1]))
             data3 = sm.values
+            data3 = np.where(data3<0, np.nan, data3)
             nan_mask = np.isnan(data3).any(axis=0)
             self.F = data3[:, ~nan_mask]
             self.T, self.M, self.N = data3.shape[0], data3.shape[1], data3.shape[2]
@@ -34,9 +38,9 @@ class pca_demo():
         
     def eof_plot(self, idx = 0, ax = 0):
         tmap = np.full((self.M, self.N), np.nan)
-        tmap[self.mask] = -self.EOF[:, idx]
+        tmap[self.mask] = self.EOF[:, idx]
         basemap = ax.pcolormesh(self.lon, self.lat, tmap, cmap='jet')
-        cbar = plt.colorbar(basemap, ax=ax, orientation='vertical', shrink=0.7)
+        cbar = plt.colorbar(basemap, ax=ax, orientation='vertical', shrink=0.4)
         pause = 1
         return
     
@@ -58,10 +62,10 @@ class pca_demo():
         pause = 1
         return
     
-
 if __name__ == '__main__':
     file = 'SMPct_monthly_0.250deg_1950_2016.nc'
     tmp = pca_demo(file = file, var_ = 'vcpct')
     tmp.pca(st = [5, 6, 7])
     fig, ax = plt.subplots()
     tmp.eof_plot(ax=ax, idx=0)
+    pause = 1
