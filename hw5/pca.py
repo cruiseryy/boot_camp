@@ -50,15 +50,15 @@ class pca_demo():
         for k in st:
             F += 1 / len(st) * self.F[k::12, :][:t]
         F -= np.mean(F, axis = 0)
-        L = np.matmul(F, F.T)
+        L = F @ F.T 
         # LAMBDA, B = np.linalg.eig(L)
         LAMBDA, B = scipy.linalg.eig(L)
         LAMBDA = np.real(LAMBDA)
-        self.EOF = np.matmul(F.T, B)
+        self.EOF = F.T @ B
         for i in range(len(LAMBDA)):
             self.EOF[:,i] /= np.sqrt(LAMBDA[i] + self.eps)
         self.var = LAMBDA / np.sum(LAMBDA)
-        self.PC = np.matmul(F, self.EOF)
+        self.PC = F @ self.EOF
         pause = 1
         return
     
