@@ -4,34 +4,44 @@ from scipy.stats import zscore
 
 class cca_demo:
     def __init__(self, x, y) -> None:
-        # self.x, self.y = x, y
-        self.x, self.y = zscore(x, ddof=1), zscore(y, ddof=1)
-        self.n, self.p, self.q = x.shape[0], x.shape[1], y.shape[1]
-        self.cxx = np.matmul(x.T, x) / (self.n - 1)
-        self.cyy = np.matmul(y.T, y) / (self.n - 1)
-        self.cxy = np.matmul(x.T, y) / (self.n - 1)
+
+        self.x, self.y = x, y
+
+        self.x -= np.mean(self.x, axis=0)
+        self.y -= np.mean(self.y, axis=0)
+
+        self.n, self.p = self.x.shape
+        self.n, self.q = self.y.shape
+
+        self.cxy = self.x.T @ self.y / (self.n-1)
+        self.cxx = self.x.T @ self.x / (self.n-1)
+        self.cyy = self.y.T @ self.y / (self.n-1)
+
+        return
     
     def invert_(self, x):
         S, V = np.linalg.eig(x)
-        return np.matmul(V, np.diag(1/np.sqrt(S)), V.T)
+        return V @ np.diag(1 / np.sqrt(S)) @ V.T
     
     def cca(self):
-        cxx_inv_rt, cyy_inv_rt = self.invert_(self.cxx), self.invert_(self.cyy)
-        U, _, V = np.linalg.svd(cxx_inv_rt @ self.cxy @ cyy_inv_rt)
-        d = np.min([U.shape[0], V.shape[0]])
-        # smat = np.zeros((U.shape[0], Vh.shape[0]), dtype=complex)
-        # smat[:d, :d] = np.diag(self.S)
-        self.wx = np.matmul(cxx_inv_rt, U.T)
-        self.wy = np.matmul(cyy_inv_rt, V)
-        self.zx = np.matmul(self.x, self.wx)
-        self.zy = np.matmul(self.y, self.wy)
-        pause = 1
-        return
-    
-    def compute_cc(self, idx = [0]):
-        cc = []
-        for i in idx:
-            cc.append(np.corrcoef(self.zx[:,i], self.zy[:, i])[0, 1])
-            pause = 1
-        return cc
+        cxx_sq_inv, cyy_sq_inv = self.invert_(self.cxx), self.invert_(self.cyy)
+        OMEGA = cxx_sq_inv @ self.cxy @ cyy_sq_inv
+        c, _, d = np.linalg.svd(OMEGA)
+        d = d.T
+        self.wx = cxx_sq_inv @ c
+        self.wy = cyy_sq_inv @ d
 
+        self.zx = self.x @ self.wx
+        self.zy = self.y @ self.wy
+        self.cc = np.diag(np.corrcoef(self.zx.T, self.zy.T)[:self.p, self.p:])
+        return
+
+if __name__ == '__main__':
+    x = np.random.rand(67, 10)
+    y = np.random.rand(67, 15)
+    tmp = cca_demo(x = x, y = y)
+    tmp.cca()
+    fig, ax = plt.subplots()
+    ax.plot(tmp.cc)
+    plt.show()
+    pause = 1
