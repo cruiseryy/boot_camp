@@ -2,6 +2,7 @@ import numpy as np
 import scipy
 import xarray as xr
 from matplotlib import pyplot as plt
+import cartopy.crs as ccrs
 import time
 
 class pca_demo():
@@ -36,11 +37,16 @@ class pca_demo():
             pause = 1
             return
         
-    def eof_plot(self, idx = 0, ax = 0):
+    def eof_plot(self, idx = 0, ax = 0, cbar_label = 'label' ):
         tmap = np.full((self.M, self.N), np.nan)
         tmap[self.mask] = self.EOF[:, idx]
+        ax.coastlines()
         basemap = ax.pcolormesh(self.lon, self.lat, tmap, cmap='jet')
-        cbar = plt.colorbar(basemap, ax=ax, orientation='vertical', shrink=0.4)
+        cbar = plt.colorbar(basemap, ax=ax, orientation='vertical', shrink=0.75)
+        gl = ax.gridlines(draw_labels=True, linewidth=1.5, color='gray', alpha=0.5, linestyle='--')
+        gl.right_labels = False
+        gl.bottom_labels = False
+        cbar.set_label(cbar_label)
         pause = 1
         return
     
