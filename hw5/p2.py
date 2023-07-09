@@ -12,9 +12,9 @@ p_sm.pca(st = [5, 6, 7])
 
 file2 = 'HadISST_sst.nc'
 p_sst = pca_demo(file = file2, var_ = 'sst', lat_ = 'latitude', lon_ = 'longitude', time_slice = ['1950-01-01', '2017-01-01'])
-p_sst.pca(st = [5, 6, 7])
+p_sst.pca(st = [0, 1])
 
-tmp = cca_demo(x = p_sm.PC[:, :10], y = p_sst.PC[:, 0:16])
+tmp = cca_demo(x = p_sm.PC[:, :4], y = p_sst.PC[:, 0:16])
 tmp.cca()
 plt.plot(tmp.cc)
 

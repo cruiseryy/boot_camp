@@ -18,6 +18,7 @@ class pca_demo():
                 sm = ds[var_].sel(time=slice(time_slice[0], time_slice[1]))
             data3 = sm.values
             data3 = np.where(data3<0, np.nan, data3)
+            # data3 = data3[33*12:,:,:]
             nan_mask = np.isnan(data3).any(axis=0)
             self.F = data3[:, ~nan_mask]
             self.T, self.M, self.N = data3.shape[0], data3.shape[1], data3.shape[2]
@@ -61,8 +62,9 @@ class pca_demo():
         LAMBDA, B = scipy.linalg.eig(L)
         LAMBDA = np.real(LAMBDA)
         self.EOF = F.T @ B
-        for i in range(len(LAMBDA)):
-            self.EOF[:,i] /= np.sqrt(LAMBDA[i] + self.eps)
+        self.EOF /= (np.sqrt(LAMBDA) + self.eps)
+        # for i in range(len(LAMBDA)):
+        #     self.EOF[:,i] /= np.sqrt(LAMBDA[i] + self.eps)
         self.var = LAMBDA / np.sum(LAMBDA)
         self.PC = F @ self.EOF
         pause = 1

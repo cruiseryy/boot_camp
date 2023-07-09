@@ -19,12 +19,13 @@ ax1.set_ylabel('Var Explained [%]')
 pause = 1
 
 # task 2
-fig2, ax2 = plt.subplots(nrows=2, ncols=1, subplot_kw={'projection': ccrs.PlateCarree()})
+fig2, ax2 = plt.subplots(nrows=2, ncols=1, subplot_kw={'projection': ccrs.PlateCarree()}, figsize = [10, 8]) 
 tmp.eof_plot(idx=0, ax = ax2[0], cbar_label = 'soil moisture [%]')
 tmp.eof_plot(idx=1, ax = ax2[1], cbar_label = 'soil moisture [%]')
 ax2[0].set_title('(a) EOF 1')
 ax2[1].set_title('(b) EOF 2')
 fig2.tight_layout()
+# fig2.savefig('p1_2.pdf')
 pause = 1
 
 # task 3
@@ -40,6 +41,7 @@ for t in st:
     nino[:, 0] += 1 / len(st) * nino_f[:, t+1]
     amo[:, 0] += 1 / len(st) * amo_f[:, t+1]
 sst_idx = np.concatenate((nino, nao, amo), axis = 1)
+# sst_idx = sst_idx[33:, :]
 sm_pc = tmp.PC[:, :4]
 cc = np.corrcoef(sst_idx.T, sm_pc.T)[:sst_idx.shape[1], sst_idx.shape[1]:]
 fig30, ax30 = plt.subplots()
@@ -50,15 +52,18 @@ txx = np.arange(1950, 2017)
 for k in range(4):
     ax30.plot(txx, tmp.PC[:, k], label = 'PC {}'.format(k + 1))
 ax30.legend()
-
-fig31, ax31 = plt.subplots() 
-basemap = ax31.pcolor(cc)
-ax31.set_xticks(np.arange(4) + 0.5 )
-ax31.set_xticklabels(['1', '2', '3', '4'])
-ax31.set_yticks(np.arange(3) + 0.5 )
-ax31.set_yticklabels(['nino', 'nao', 'amo'])
-ax31.set_xlabel('PC Index')
-ax31.set_ylabel('SST Index')
-cbar = plt.colorbar(basemap, ax=ax31, orientation='vertical', shrink=0.75)
-cbar.set_label('Corr Coef')
+ax30.grid()
+ax30.set_xlabel('Year')
 pause = 1
+
+# fig31, ax31 = plt.subplots() 
+# basemap = ax31.pcolor(cc)
+# ax31.set_xticks(np.arange(4) + 0.5 )
+# ax31.set_xticklabels(['1', '2', '3', '4'])
+# ax31.set_yticks(np.arange(3) + 0.5 )
+# ax31.set_yticklabels(['nino', 'nao', 'amo'])
+# ax31.set_xlabel('PC Index')
+# ax31.set_ylabel('SST Index')
+# cbar = plt.colorbar(basemap, ax=ax31, orientation='vertical', shrink=0.75)
+# cbar.set_label('Corr Coef')
+# pause = 1
