@@ -30,7 +30,17 @@ tmap2[p_sst.mask] = sst_cvar[:, 0]
 fig2, ax2 = plt.subplots(nrows=2, ncols=1, subplot_kw={'projection': ccrs.PlateCarree()}, figsize = [10, 8]) 
 ax2[0].coastlines()
 basemap = ax2[0].pcolormesh(p_sm.lon, p_sm.lat, tmap1, cmap='jet')
+cbar = plt.colorbar(basemap, ax=ax2[0], orientation='vertical', shrink=0.75)
+gl = ax2[0].gridlines(draw_labels=True, linewidth=1.5, color='gray', alpha=0.5, linestyle='--')
+gl.right_labels = False
+gl.bottom_labels = False
+
 ax2[1].coastlines()
 basemap = ax2[1].pcolormesh(p_sst.lon, p_sst.lat, tmap2, cmap='jet')
+cbar = plt.colorbar(basemap, ax=ax2[1], orientation='vertical', shrink=0.75)
+gl = ax2[1].gridlines(draw_labels=True, linewidth=1.5, color='gray', alpha=0.5, linestyle='--')
+gl.right_labels = False
+gl.bottom_labels = False
+
 pause = 1
 # fig, ax = plt.subplots(nrows = 2, ncols = 2, subplot_kw={'projection': ccrs.PlateCarree ()})
