@@ -135,7 +135,7 @@ class lds_demo:
                 idx = self.prev[j][i+1]
                 self.traj2[i*self.dt: (i+1)*self.dt, j] = self.traj[i*self.dt: (i+1)*self.dt, idx]
                 
-
+        return 
 
         
     def score(self, traj): 

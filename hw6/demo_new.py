@@ -43,6 +43,4 @@ ax.set_ylabel('Cumulative Rainfall of DJF [mm]')
 ax.legend()
 ax.grid()
 
-
-
 PAUSE = 1
