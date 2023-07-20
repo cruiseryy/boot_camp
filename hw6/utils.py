@@ -63,12 +63,13 @@ class lds_demo:
         self.gen = gen
         self.dt = dt
         self.T = T
-
+        self.prev = [[0]]
         return 
     
     def sim(self, N = 256, k = 0.1):
         traj = np.zeros([self.T, N])
         R = np.zeros([self.T // self.dt, ])
+        self.prev = [[0]*(self.T // self.dt) for _ in range(N)]
         for i in range(self.T // self.dt):
             if i == 0:
                 ic = []
@@ -76,11 +77,15 @@ class lds_demo:
             else:
                 ic = traj[i*self.dt-1, :]
                 tmp_traj = self.gen.sim(T = self.dt + 1, N = N, ic = ic)[1:, :]
-            new_traj, tr = self.restart(traj = tmp_traj, k = k)
+            new_traj, tr = self.restart(traj = tmp_traj, k = k, i = i)
             R[i] = tr
             traj[i*self.dt: (i+1)*self.dt, :] = new_traj
-        res = self.evaluate(traj = traj, R = R, k = k)
-        return res
+        self.traj = traj
+        self.N = N
+        self.trace_back()
+        res1 = self.evaluate(traj = self.traj2, R = R, k = k)
+        res0 = self.evaluate(traj = self.traj, R = R, k = k)
+        return res0, res1
     
     def evaluate(self, traj, R, k):
         N = traj.shape[1]
@@ -98,7 +103,7 @@ class lds_demo:
             res[:, j] = [res[0, j-1] + dp*alter_p[j], tot[j][0]]
         return res
 
-    def restart(self, traj, k):
+    def restart(self, traj, k, i):
         t, n = traj.shape
         weights = np.zeros([n, ])
         new_traj = np.zeros([t, n])
@@ -115,8 +120,21 @@ class lds_demo:
         tmpcdf /= tmpcdf[-1]
 
         for j in range(n):
-            new_traj[:, j] = traj[:, bisect.bisect(tmpcdf, np.random.rand())]
+            idx = bisect.bisect(tmpcdf, np.random.rand())
+            self.prev[j][i] = idx
+            new_traj[:, j] = traj[:, idx]
         return new_traj, R
+    
+    def trace_back(self):
+        l, N = self.T // self.dt, self.N
+        self.traj2 = np.zeros([self.T, N])
+        self.traj2[(l-1)*self.dt: l*self.dt, :] = self.traj[(l-1)*self.dt: l*self.dt, :]
+
+        for i in range(l-2, -1, -1):
+            for j in range(N):
+                idx = self.prev[j][i+1]
+                self.traj2[i*self.dt: (i+1)*self.dt, j] = self.traj[i*self.dt: (i+1)*self.dt, idx]
+                
 
 
         

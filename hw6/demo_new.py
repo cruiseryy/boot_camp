@@ -30,13 +30,16 @@ mc.fit()
 # ax.scatter(list(range(1, 41)), rainfall_jf2)
 
 lds = lds_demo(gen = mc)
-res = lds.sim(k = 0.02)
+res0, res1 = lds.sim(k = 0.015)
 samples = sorted(np.sum(mc.sim(T = 60, N = 10000), axis = 0))
 ecdf = np.array([range(1,10001)]) / 10001
 fig, ax = plt.subplots()
-ax.scatter(1/ecdf, samples, color='red')
-ax.scatter(1/res[0, :], 5.8*60 -res[1, :], color='blue', marker='1')
+ax.scatter(1/ecdf, samples, color='black',edgecolors='none', alpha = 0.5)
+ax.scatter(1/res1[0, :], 5.8*60 -res1[1, :], color='blue', marker='x')
+ax.scatter(1/res0[0, :], 5.8*60 -res0[1, :], color='red', marker='1')
 ax.set_xscale('log')
+ax.grid()
+
 
 
 PAUSE = 1
