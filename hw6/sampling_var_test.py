@@ -33,6 +33,12 @@ for l in range(L):
             u = np.random.rand() 
             tmpn = int(ww[x0[j]] + u)
             p1 += [x0[j]] * tmpn
+        if len(p1) < 128:
+            while len(p1) < 128:
+                p1.append(random.choice(p1))
+        else:
+            p1 = p1[:128]
+
         p2 = []
         for j in range(N):
             # resample
