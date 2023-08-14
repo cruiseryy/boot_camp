@@ -101,6 +101,27 @@ class lds_demo:
         res[:, 0] = [alter_p[0]*dp, tot[0][0]]
         for j in range(1, N):
             res[:, j] = [res[0, j-1] + dp*alter_p[j], tot[j][0]]
+        
+        # i tried to estimate the variance of the estimator, but it seems to not work well
+        # this is incorecct, taking the smallest value (denoted by b) as the example
+        # denote Omega(x0) = p(x0) / q(x0)
+        # then Pr(A <= b) ~= 1 / M * p(x0) / q(x0) = 1 / M * Omega(x0) denoted by Pr'(A <= b)
+        # then E[1b ** 2 * (p/q) ** 2] ~= 1 / M * Omega(x0) ** 2
+        # then Var[1b * (p/q)] ~= 1 / M * Omega(x0) ** 2 - (1 / M * Omega(x0)) ** 2 = 1 / M * (M - 1) / M * Omega(x0) ** 2 
+        # the variance of the estimator is thus Var[1b * (p/q)] / M = 1 / M / M * (M - 1) / M * Omega(x0) ** 2 
+        # the standard deviation of the estimator is thus sqrt(Var[1b * (p/q)] / M) = 1 / M * sqrt((M - 1) / M) * Omega(x0) = sqrt((M - 1) / M) * Pr'(A <= b)
+        # the sd is almost indistinguishable from the estimator itself considering the relatively large value of M
+
+        # xsq_ = np.zeros([N, ])
+        # xsq_[0] = (alter_p[0] ** 2) * dp
+        # var_ = np.zeros([N, ])
+        # var_[0] = xsq_[0] - res[0, 0] ** 2
+        # for j in range(1, N):
+        #     xsq_[j] = xsq_[j-1] + (alter_p[j] ** 2) * dp
+        #     var_[j] = xsq_[j] - res[0, j] ** 2
+        # var_ /= N
+        # sd = np.sqrt(var_)
+        
         return res
 
     def restart(self, traj, k, i):
